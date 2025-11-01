@@ -1,48 +1,21 @@
-import { readFile, open, FileHandle } from "fs/promises";
-import { AsyncQueue } from "./asyncQueue.js";
+import { getLinesChannel } from "./lineChannel.js";
+import { createServer } from "node:net";
+import { type Server } from "node:net";
 
-function getLinesChannel(file: FileHandle): AsyncIterable<string> {
-  const q = new AsyncQueue<string>();
-  (async () => {
-    const buffer = Buffer.alloc(8);
+const server: Server = createServer(async (s) => {
+  console.log("client connected");
 
-    let offset = 0;
-    let bytesRead: number;
-
-    let s = "";
-    try {
-      do {
-        const data = await file.read(buffer, 0, 8, offset);
-        bytesRead = data.bytesRead;
-        const chunk = buffer.subarray(0, bytesRead);
-        s += chunk.toString("utf-8");
-        if (s.includes("\n")) {
-          {
-            let lines = s.split("\n");
-            for (let index = 0; index < lines.length - 1; index++) {
-              q.push(lines[index]);
-            }
-            s = lines[lines.length - 1];
-          }
-        }
-        offset += bytesRead;
-      } while (bytesRead > 0);
-    } finally {
-      await file.close();
-      q.close();
-    }
-  })().catch(async () => {
-    q.close();
-    await file.close();
-  });
-  return q;
-}
-
-const file = await open(
-  "/Users/shashwatpoudel/Documents/pro-idea/server/src/message.txt",
-  "r",
-);
-
-for await (const line of getLinesChannel(file)) {
-  console.log(`read: ${line}`);
-}
+  for await (const line of getLinesChannel(s)) {
+    console.log(line);
+  }
+  console.log("Connection Closed");
+});
+server.listen(42069, () => {
+  console.log("server is listening");
+});
+//process.on("SIGINT", () => {
+// server.close(() => {
+//  console.log("Connection Closed");
+// });
+// process.exit(0);
+//});
