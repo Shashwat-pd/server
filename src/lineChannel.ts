@@ -1,4 +1,3 @@
-import { open, FileHandle } from "fs/promises";
 import { AsyncQueue } from "./asyncQueue.js";
 import { type Socket } from "node:net";
 
@@ -9,9 +8,9 @@ export function getLinesChannel(socket: Socket): AsyncIterable<string> {
     try {
       for await (const chunk of socket) {
         s += chunk.toString("utf-8");
-        if (s.includes("\n")) {
+        if (s.includes("\r\n")) {
           {
-            let lines = s.split("\n");
+            let lines = s.split("\r\n");
             for (let index = 0; index < lines.length - 1; index++) {
               q.push(lines[index]);
             }
