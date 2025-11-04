@@ -12,6 +12,7 @@ export type Request = {
 };
 
 export async function getRequestLine(s: Socket) {
+  //union types maybee?
   const methods = [
     "GET",
     "POST",
@@ -55,4 +56,8 @@ export async function getRequestLine(s: Socket) {
   }
 
   return { method, path, version } as RequestLine;
+}
+
+function getRequestHeader(socket:Socket) {
+
 }
