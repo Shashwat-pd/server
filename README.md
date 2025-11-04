@@ -15,10 +15,10 @@ parses incoming requests, and demonstrates how an HTTP server works without rely
 - **Async utilities** – a minimalist async queue powers the line channel abstraction.
 - **TypeScript-first** – strict typing across the server, parser, and utility layers.
 
-  ## Demo
+## Demo
 
   <video controls width="640">
-    <source src="demo.mp4" type="video/mp4" />
+    <source src="demo.mov" type="video/mov" />
   </video>
 
 ## Project Structure
