@@ -17,7 +17,7 @@
 - [Motivation](#-motivation)
 - [Features](#-features)
 - [Demo](#-demo)
-- [Getting Started](#-getting-started)
+- [Quick Start](#-quick-start)
 - [📖 Usage](#-usage)
 - [Development Notes](#-development-notes)
 - [🤝 Contributing](#-contributing)
@@ -45,7 +45,7 @@ I needed a shared grocery list with my roommate, but every “simple” solution
   <img src="demo.gif" alt="Demo walkthrough" height="360">
 </p>
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
