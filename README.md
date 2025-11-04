@@ -16,8 +16,7 @@ parses incoming requests, and demonstrates how an HTTP server works without rely
 - **TypeScript-first** – strict typing across the server, parser, and utility layers.
 
 ## Demo
-
-![Demo walkthrough](demo.gif)
+<img src="demo.gif" height="640" alt="Demo walkthrough" />
 
 
 ## Getting Started
