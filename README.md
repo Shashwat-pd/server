@@ -17,7 +17,7 @@ parses incoming requests, and demonstrates how an HTTP server works without rely
 
 ## Demo
 
-    ![Demo walkthrough](demo.gif)
+![Demo walkthrough](demo.gif)
 
 ## Project Structure
 
