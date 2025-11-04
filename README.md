@@ -17,9 +17,7 @@ parses incoming requests, and demonstrates how an HTTP server works without rely
 
 ## Demo
 
-  <video controls width="640">
-    <source src="demo.mov" type="video/mov" />
-  </video>
+    ![Demo walkthrough](demo.gif)
 
 ## Project Structure
 
