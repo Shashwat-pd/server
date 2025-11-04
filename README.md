@@ -19,16 +19,6 @@ parses incoming requests, and demonstrates how an HTTP server works without rely
 
 ![Demo walkthrough](demo.gif)
 
-## Project Structure
-
-src/
-├── asyncQueue.ts # Generic async iterable queue used to buffer line reads
-├── index.ts # Server bootstrap and connection lifecycle handling
-├── lineChannel.ts # Transforms socket chunks into an async line iterator
-├── parser.ts # Parses the HTTP request line and validates its parts
-└── message.txt # Placeholder for ad-hoc debugging messages
-
-Compiled JavaScript is emitted into `dist/`.
 
 ## Getting Started
 
