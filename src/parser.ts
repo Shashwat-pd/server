@@ -1,3 +1,4 @@
+import { ConsoleLogWriter } from "drizzle-orm";
 import { getLinesChannel } from "./lineChannel.js";
 import { Socket } from "node:net";
 export type RequestLine = {
@@ -17,8 +18,9 @@ export async function stream(s: Socket) {
   const lines = getLinesChannel(s);
   const requestLine = await getRequestLine(lines.headers);
   const requestHeader = await getRequestHeader(lines.headers);
-  const contentLength = requestHeader["content-length"];
+  const contentLength = requestHeader["content-length"] ?? 0;
   const body = await getRequestBody(lines.body, contentLength);
+  console.log(Buffer.from(body).toString("utf-8"));
 
   return {
     RequestLine: requestLine,
@@ -86,7 +88,6 @@ async function getRequestHeader(q: AsyncIterable<string>) {
       requestHeader[k] = `${requestHeader[k]}, ${v}`;
     }
   }
-  console.log(requestHeader);
   return requestHeader as RequestHeader;
 }
 
@@ -108,10 +109,22 @@ async function getRequestBody(
   b: AsyncIterable<Buffer>,
   len: string,
 ): Promise<Uint8Array> {
-  let body = Buffer.alloc(parseInt(len));
+  let length = parseInt(len);
+  let body = Buffer.alloc(length);
+  let offset = 0;
   try {
     for await (const bytes of b) {
-      bytes.copy(body);
+      console.log(bytes);
+      let remaining = length - offset;
+      if (remaining <= 0) break;
+      let bytesToWrite = Math.min(bytes.length, remaining);
+      bytes.copy(body, offset, 0, bytesToWrite);
+      offset += bytesToWrite;
+
+      if (offset === length) break;
+    }
+    if (offset !== length) {
+      throw new Error(`Body truncated: expected ${length}, got ${offset}`);
     }
   } catch (e) {
     if (e instanceof Error) {
@@ -119,5 +132,5 @@ async function getRequestBody(
     }
     throw new Error("BufferOverflow");
   }
-  return body;
+  return body.slice(0, length);
 }

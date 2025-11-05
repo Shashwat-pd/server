@@ -1,17 +1,18 @@
 import { AsyncQueue } from "./asyncQueue.js";
 import { type Socket } from "node:net";
-type LineAndBody {
+type LineAndBody = {
   headers: AsyncIterable<string>;
   body: AsyncIterable<Buffer>;
-}
+};
 export function getLinesChannel(socket: Socket): LineAndBody {
   const q = new AsyncQueue<string>();
   const b = new AsyncQueue<Buffer>();
   (async () => {
     let s = "";
-    let buff = Buffer.alloc(10 * 1024 * 1024);
+    let buff = Buffer.alloc(0);
     let offset = 0;
     let headerEnd = false;
+    const HEADER_END = "\r\n\r\n";
     try {
       for await (const chunk of socket) {
         if (headerEnd) {
@@ -19,23 +20,28 @@ export function getLinesChannel(socket: Socket): LineAndBody {
           if (chunk.length > free) {
             throw new Error("Body exceeds buffer capacity");
           }
-          chunk.copy(buff, offset, 0, buff.length);
+          buff = Buffer.concat([buff, chunk]);
           offset += chunk.length;
-          b.push(buff);
+          b.push(chunk);
         }
+
+        buff = Buffer.concat([buff, chunk]);
         s += chunk.toString("utf-8");
 
         if (s.includes("\r\n")) {
           {
             let lines = s.split("\r\n");
-            const endOfHeadersIndex = lines.indexOf("");
+            const endOfHeadersIndex = buff.indexOf(HEADER_END);
             if (endOfHeadersIndex != -1) {
               headerEnd = true;
-              const leftover = chunk.slice(endOfHeadersIndex + 4);
+              const leftover = buff.slice(
+                endOfHeadersIndex + HEADER_END.length,
+              );
               if (leftover.length) {
                 if (offset + leftover.length > buff.length)
                   throw new Error("Body exceeds buffer capacity");
                 leftover.copy(buff, offset);
+                b.push(leftover);
                 offset += leftover.length;
               }
             }
