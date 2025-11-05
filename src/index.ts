@@ -2,12 +2,11 @@ import { getLinesChannel } from "./lineChannel.js";
 import { createServer } from "node:net";
 import { type Server } from "node:net";
 import { type RequestLine, getRequestLine } from "./parser.js";
+import { stream } from "./parser.js";
 
 const server: Server = createServer(async (s) => {
   console.log("client connected");
-  const requestLine: RequestLine = await getRequestLine(s);
-  console.log(requestLine)
-
+  const data = await stream(s);
   console.log("Connection Closed");
 });
 server.listen(42069, () => {
