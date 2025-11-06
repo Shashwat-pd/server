@@ -2,6 +2,7 @@ import { createServer } from "node:net";
 import { type Server, Socket } from "node:net";
 import { stream } from "./parser.js";
 import { sendResponse } from "./responseGenerator.js";
+import { errorHandler, requestHandler } from "./handler.js";
 
 const PORT = 42069;
 
@@ -16,7 +17,19 @@ export function serve(p = PORT): Server {
     socket.on("close", () => sockets.delete(socket));
     socket.on("error", (err) => console.error("socket error:", err));
 
-    sendResponse(socket, "200", { defaule: "hi" }, "1");
+    try {
+      const request = await stream(socket);
+      const response = requestHandler(request);
+
+      sendResponse(socket, response);
+    } catch (e) {
+      if (e instanceof Error) {
+        let response = errorHandler(e.message);
+        sendResponse(socket, response);
+      }
+    }
+
+    socket.end();
   });
 
   server.on("error", (err) => {

@@ -1,6 +1,6 @@
 import { Socket } from "node:net";
 
-const STATUS_MESSAGES: Record<string, string> = {
+export const STATUS_MESSAGES: Record<string, string> = {
   "200": "OK",
   "201": "Created",
   "204": "No Content",
@@ -14,29 +14,32 @@ const STATUS_MESSAGES: Record<string, string> = {
   "502": "Bad Gateway",
   "503": "Service Unavailable",
 };
+export type Response = {
+  code: string;
+  headers?: Record<string, string>;
+  body?: string;
+};
 
-export function sendResponse(
-  socket: Socket,
-  statusCode?: string,
-  headers?: Record<string, string>,
-  data?: any,
-) {
+export function sendResponse(socket: Socket, response: Response) {
+  console.log("Here");
   const defaultHeaders = {
-    "Content-Length": "0",
     Connection: "close",
     "Content-Type": "text/plain",
   };
-  if (statusCode !== undefined) {
-    socket.write(`HTTP/1.1 ${statusCode} ${STATUS_MESSAGES[statusCode]}\r\n`);
+  if (response.code !== undefined) {
+    socket.write(
+      `HTTP/1.1 ${response.code} ${STATUS_MESSAGES[response.code]}\r\n`,
+    );
   }
 
-  const finalHeader = { ...defaultHeaders, ...headers };
-  if (headers !== undefined) {
+  const finalHeader = { ...defaultHeaders, ...response.headers };
+  if (response.headers !== undefined) {
     for (const [key, value] of Object.entries(finalHeader)) {
       socket.write(`${key}: ${value}\r\n`);
     }
   }
-
-  if (data !== undefined) {
+  socket.write(`\r\n`);
+  if (response.body) {
+    socket.write(`${response.body}`);
   }
 }

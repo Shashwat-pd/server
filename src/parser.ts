@@ -1,4 +1,5 @@
-import { ConsoleLogWriter } from "drizzle-orm";
+import { sendResponse } from "./responseGenerator.js";
+import { errorHandler } from "./handler.js";
 import { getLinesChannel } from "./lineChannel.js";
 import { Socket } from "node:net";
 export type RequestLine = {
@@ -55,7 +56,8 @@ export async function getRequestLine(q: AsyncIterable<string>) {
   //couldBeBetter????????
   let reqArray = requestLine.split(" ");
   if (reqArray.length > 3) {
-    throw new Error(`Invalid Request Line`);
+    errorHandler("500");
+    return;
   }
   const method = reqArray[0];
   const path = reqArray[1];
@@ -63,13 +65,13 @@ export async function getRequestLine(q: AsyncIterable<string>) {
   const regex = /^\/[^\s#]*$/;
 
   if (!methods.includes(method)) {
-    throw new Error(`Unsupported HTTP method: ${method}`);
+    throw new Error(`400`);
   }
   if (version != "HTTP/1.1") {
-    throw new Error(`Invalid HTTP Version`);
+    throw new Error(`400`);
   }
   if (!path.match(regex)) {
-    throw new Error(`invalid path`);
+    throw new Error(`400`);
   }
 
   return { method, path, version } as RequestLine;
@@ -96,7 +98,7 @@ function parseRequestKeyValue(line: string) {
   const index = trimmed.indexOf(":");
 
   if (index === -1) {
-    throw new Error(`Malformed: "${line}"`);
+    throw new Error(`400`);
   }
 
   const key = trimmed.slice(0, index).trim().toLowerCase();
@@ -114,7 +116,6 @@ async function getRequestBody(
   let offset = 0;
   try {
     for await (const bytes of b) {
-      console.log(bytes);
       let remaining = length - offset;
       if (remaining <= 0) break;
       let bytesToWrite = Math.min(bytes.length, remaining);
@@ -124,13 +125,13 @@ async function getRequestBody(
       if (offset === length) break;
     }
     if (offset !== length) {
-      throw new Error(`Body truncated: expected ${length}, got ${offset}`);
+      throw new Error(`400`);
     }
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(e.message);
     }
-    throw new Error("BufferOverflow");
+    throw new Error("400");
   }
   return body.slice(0, length);
 }
